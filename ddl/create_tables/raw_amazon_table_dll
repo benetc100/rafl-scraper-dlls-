@@ -1,0 +1,30 @@
+/*  
+
+Raw amazon table load for all from the top 100 categories  
+
+*/ 
+
+
+create table if not exists raw_amazon_products (
+    raw_id bigserial primary key,
+    scrape_batch_id text,
+    row_reference text,
+    start_url text,
+    pagination text,
+
+    review_count_text text,
+    product_title text,
+    rank_text text,
+    price_text text,
+    rating_text text,
+    extra_text_1 text,
+    extra_text_2 text,
+    extra_text_3 text,
+    category_hint text,
+    image_url text,
+
+    raw_payload jsonb,
+    loaded_at timestamp default now(),
+    processed_flag boolean default false,
+    processed_at timestamp
+);
