@@ -1,0 +1,47 @@
+/*  
+
+Inser into the silver_scraped_products table stored procedure
+
+*/ 
+create or replace function public.load_raw_amazon_to_silver()
+returns void
+language plpgsql
+as $$
+begin
+
+    insert into public.silver_scraped_products (
+        raw_scrape_id,
+        source_name,
+        source_url,
+        product_title,
+        product_rank,
+        price_amount,
+        currency_code,
+        rating_value,
+        review_count,
+        image_url,
+        is_valid,
+        cleaned_at
+    )
+    select
+        id as raw_scrape_id,
+        'amazon' as source_name,
+        web_scraper_start_url as source_url,
+        trim(split_part(data2, '|', 1)) as product_title,
+        null as product_rank,
+        nullif(regexp_replace(price, '[^0-9.]', '', 'g'), '')::numeric as price_amount,
+        'GBP' as currency_code,
+        nullif(split_part(data4, ' ', 1), '')::numeric as rating_value,
+        nullif(replace(data, ',', ''), '')::int as review_count,
+        image as image_url,
+        case
+            when nullif(regexp_replace(price, '[^0-9.]', '', 'g'), '') is null then false
+            when image is null or trim(image) = '' then false
+            when data2 is null or trim(data2) = '' then false
+            else true
+        end as is_valid,
+        now() as cleaned_at
+    from public.raw_amazon_products;
+
+end;
+$$;
